@@ -1,0 +1,180 @@
+[
+  {
+    "section": "transaction",
+    "data": {
+      "type": "837",
+      "controlNumber": "0021",
+      "purpose": "0019",
+      "referenceId": "0123",
+      "date": "1998-10-15",
+      "time": "10:23",
+      "version": "004010X098"
+    }
+  },
+  {
+    "section": "submitter",
+    "data": {
+      "name": "PREMIER BILLING SERVICE",
+      "id": "TGJ23",
+      "contact": {
+        "name": "JERRY",
+        "phone": "3055552222",
+        "extension": "231"
+      }
+    }
+  },
+  {
+    "section": "receiver",
+    "data": {
+      "name": "REPRICER XYZ",
+      "id": "66783JJT"
+    }
+  },
+  {
+    "section": "billing_Provider",
+    "data": {
+      "name": "PREMIER BILLING SERVICE",
+      "taxId": "587654321",
+      "address": {
+        "street": "234 Seaway St",
+        "city": "Miami",
+        "state": "FL",
+        "zip": "33111"
+      }
+    }
+  },
+  {
+    "section": "Pay_To_provider",
+    "data": {
+      "name": "KILDARE ASSOC",
+      "taxId": "581234567",
+      "address": {
+        "street": "2345 OCEAN BLVD",
+        "city": "MIAMI",
+        "state": "FL",
+        "zip": "33111"
+      }
+    }
+  },
+  {
+    "section": "subscriber",
+    "data": {
+      "relationship": "self",
+      "groupNumber": "12312-A",
+      "planType": "HM",
+      "id": "000221111",
+      "firstName": "TED",
+      "lastName": "SMITH",
+      "dob": "1943-05-01",
+      "sex": "M",
+      "address": {
+        "street": "236 N MAIN ST",
+        "city": "MIAMI",
+        "state": "FL",
+        "zip": "33413"
+      }
+    }
+  },
+  {
+    "section": "payer",
+    "data": {
+      "name": "ALLIANCE HEALTH AND LIFE INSURANCE",
+      "payerId": "741234"
+    }
+  },
+  {
+    "section": "claim",
+    "data": {
+      "id": "26462967",
+      "totalCharge": 100,
+      "placeOfService": "11",
+      "serviceType": "1",
+      "indicators": {
+        "assigned": "Y",
+        "providerSignature": "A",
+        "releaseInfo": "Y",
+        "patientSignature": "Y",
+        "relatedCause": "C"
+      },
+      "onsetDate": "1998-10-03",
+      "clearinghouseClaimNumber": "17312345600006351"
+    }
+  },
+  {
+    "section": "diagnosis",
+    "data": {
+      "primary": "0340",
+      "secondary": ["V7389"]
+    }
+  },
+  {
+    "section": "renderingProvider",
+    "data": {
+      "firstName": "BEN",
+      "lastName": "KILDARE",
+      "npi": "112233334"
+    }
+  },
+  {
+    "section": "serviceFacility",
+    "data": {
+      "name": "KILDARE ASSOCIATES",
+      "taxId": "581234567",
+      "address": {
+        "street": "2345 OCEAN BLVD",
+        "city": "MIAMI",
+        "state": "FL",
+        "zip": "33111"
+      }
+    }
+  },
+  {
+    "section": "service_Lines",
+    "data": [
+      {
+        "lineNumber": 1,
+        "codeQualifier": "HC",
+        "procedureCode": "99213",
+        "charge": 40,
+        "unitQualifier": "UN",
+        "units": 1,
+        "diagnosisPointer": 1,
+        "emergencyIndicator": "N",
+        "serviceDate": "1998-10-03"
+      },
+      {
+        "lineNumber": 2,
+        "codeQualifier": "HC",
+        "procedureCode": "87072",
+        "charge": 15,
+        "unitQualifier": "UN",
+        "units": 1,
+        "diagnosisPointer": 1,
+        "emergencyIndicator": "N",
+        "serviceDate": "1998-10-03"
+      },
+      {
+        "lineNumber": 3,
+        "codeQualifier": "HC",
+        "procedureCode": "99214",
+        "charge": 35,
+        "unitQualifier": "UN",
+        "units": 1,
+        "diagnosisPointer": 2,
+        "emergencyIndicator": "N",
+        "serviceDate": "1998-10-10"
+      },
+      {
+        "lineNumber": 4,
+        "codeQualifier": "HC",
+        "procedureCode": "86663",
+        "charge": 10,
+        "unitQualifier": "UN",
+        "units": 1,
+        "diagnosisPointer": 2,
+        "emergencyIndicator": "N",
+        "serviceDate": "1998-10-10"
+      }
+    ]
+  }
+]

@@ -1,0 +1,693 @@
+<div style="min-height:100vh; background:#0f172a; padding:40px; color:white;">
+  <div style="
+    max-width:1100px;
+    margin:auto;
+    background:#020617;
+    padding:32px;
+    border-radius:14px;
+    box-shadow:0 0 40px rgba(56,189,248,0.15);
+  ">
+
+    <!-- FLASH MESSAGES
+         Phoenix stores flash messages in the session after a redirect.
+         We read @flash here and display them as a colored banner.
+         :info = green (success),  :error = red (failure)
+    -->
+    <%= if msg = Phoenix.Flash.get(@flash, :info) do %>
+      <div style="
+        background:#14532d; border:1px solid #22c55e; color:#bbf7d0;
+        padding:12px 18px; border-radius:8px; margin-bottom:20px;
+        display:flex; align-items:center; gap:10px; font-size:14px;
+      ">
+        <span style="font-size:18px;">✓</span>
+        <%= msg %>
+      </div>
+    <% end %>
+
+    <%= if msg = Phoenix.Flash.get(@flash, :error) do %>
+      <div style="
+        background:#450a0a; border:1px solid #ef4444; color:#fecaca;
+        padding:12px 18px; border-radius:8px; margin-bottom:20px;
+        display:flex; align-items:center; gap:10px; font-size:14px;
+      ">
+        <span style="font-size:18px;">⚠</span>
+        <%= msg %>
+      </div>
+    <% end %>
+
+    <!-- HEADER -->
+    <div style="margin-bottom:32px;">
+      <h1 style="font-size:28px; font-weight:bold; color:#38bdf8;">
+        <a href="/" style="color:#38bdf8; text-decoration:none;">Claim Viewer</a>
+      </h1>
+
+      <!-- UPLOAD
+           Accepts both pre-translated JSON files AND raw X12 EDI files.
+           When an X12 file is chosen the server automatically runs the
+           Python translator (priv/python/parser_for_viewer.py) and stores
+           the result – the user never needs to translate manually.
+      -->
+      <form action="/upload" method="post" enctype="multipart/form-data" id="upload-form">
+        <input type="hidden" name="_csrf_token" value={Plug.CSRFProtection.get_csrf_token()} />
+        <%!-- Accept JSON files and all common X12 EDI file extensions --%>
+        <input type="file" name="file"
+               accept=".json,.txt,.edi,.x12,.837"
+               id="file-input" hidden />
+
+        <button type="button"
+          onclick="document.getElementById('file-input').click()"
+          style="
+            background:#06b6d4;
+            color:#020617;
+            padding:8px 16px;
+            border-radius:8px;
+            font-weight:bold;
+            border:none;
+            cursor:pointer;
+            margin-top:12px;
+          ">
+          Upload Claim File
+        </button>
+
+        <%!-- Small hint so users know what file types are accepted --%>
+        <span style="color:#64748b; font-size:12px; margin-left:10px;">
+          JSON or X12 (.edi, .837, .txt)
+        </span>
+      </form>
+    </div>
+
+    <!-- PROCESSING OVERLAY – shown while an X12 file is being translated -->
+    <div id="upload-overlay" style="
+      display:none;
+      position:fixed; top:0; left:0; right:0; bottom:0;
+      background:rgba(2,6,23,0.85);
+      z-index:100;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:20px;
+    ">
+      <div style="border:4px solid #334155; border-top:4px solid #38bdf8; border-radius:50%; width:48px; height:48px; animation:spin 0.8s linear infinite;"></div>
+      <p style="color:#38bdf8; font-size:18px; font-weight:bold;">Processing claim file…</p>
+      <p style="color:#94a3b8; font-size:14px;">X12 translation in progress, please wait</p>
+    </div>
+
+    <script>
+      document.getElementById("file-input")?.addEventListener("change", function(e) {
+        if (e.target.files.length > 0) {
+          // Show the overlay before submitting so the user knows work is happening
+          var overlay = document.getElementById("upload-overlay");
+          overlay.style.display = "flex";
+          document.getElementById("upload-form").submit();
+        }
+      });
+    </script>
+
+<!-- SEARCH -->
+<form method="get" action="/search" id="search-form">
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+    
+    <!-- Patient First Name -->
+    <div style="position:relative;">
+      <input id="patient_first" name="patient_first" value={@patient_first} placeholder="Patient first name" style="background:#020617;border:2px solid #06b6d4;color:white;padding:10px 30px 10px 10px;border-radius:8px;width:100%;" />
+      <%= if @patient_first != "" do %>
+        <button type="button" onclick="document.getElementById('patient_first').value=''; document.getElementById('patient_first').focus();" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#94a3b8;cursor:pointer;font-size:20px;padding:0;width:24px;height:24px;line-height:1;">×</button>
+      <% end %>
+    </div>
+    
+    <!-- Patient Last Name -->
+    <div style="position:relative;">
+      <input id="patient_last" name="patient_last" value={@patient_last} placeholder="Patient last name" style="background:#020617;border:2px solid #06b6d4;color:white;padding:10px 30px 10px 10px;border-radius:8px;width:100%;" />
+      <%= if @patient_last != "" do %>
+        <button type="button" onclick="document.getElementById('patient_last').value=''; document.getElementById('patient_last').focus();" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#94a3b8;cursor:pointer;font-size:20px;padding:0;width:24px;height:24px;line-height:1;">×</button>
+      <% end %>
+    </div>
+    
+    <!-- Payer -->
+    <div style="position:relative;">
+      <input id="payer" name="payer" value={@payer} placeholder="Payer name" style="background:#020617;border:2px solid #06b6d4;color:white;padding:10px 30px 10px 10px;border-radius:8px;width:100%;" />
+      <%= if @payer != "" do %>
+        <button type="button" onclick="document.getElementById('payer').value=''; document.getElementById('payer').focus();" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#94a3b8;cursor:pointer;font-size:20px;padding:0;width:24px;height:24px;line-height:1;">×</button>
+      <% end %>
+    </div>
+    
+    <!-- Billing Provider -->
+    <div style="position:relative;">
+      <input id="billing_provider" name="billing_provider" value={@billing_provider} placeholder="Billing provider" style="background:#020617;border:2px solid #06b6d4;color:white;padding:10px 30px 10px 10px;border-radius:8px;width:100%;" />
+      <%= if @billing_provider != "" do %>
+        <button type="button" onclick="document.getElementById('billing_provider').value=''; document.getElementById('billing_provider').focus();" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#94a3b8;cursor:pointer;font-size:20px;padding:0;width:24px;height:24px;line-height:1;">×</button>
+      <% end %>
+    </div>
+    
+    <!-- Rendering Provider NPI -->
+    <div style="position:relative;">
+      <input id="rendering_provider" name="rendering_provider" value={@rendering_provider} placeholder="Rendering provider NPI (10 digits)" pattern="[0-9]{10}" maxlength="10" title="NPI must be exactly 10 digits" style="background:#020617;border:2px solid #06b6d4;color:white;padding:10px 30px 10px 10px;border-radius:8px;width:100%;" />
+      <%= if @rendering_provider != "" do %>
+        <button type="button" onclick="document.getElementById('rendering_provider').value=''; document.getElementById('rendering_provider').focus();" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#94a3b8;cursor:pointer;font-size:20px;padding:0;width:24px;height:24px;line-height:1;">×</button>
+      <% end %>
+    </div>
+    
+    <!-- Claim Number -->
+    <div style="position:relative;">
+      <input id="claim_number" name="claim_number" value={@claim_number} placeholder="Claim #" style="background:#020617;border:2px solid #06b6d4;color:white;padding:10px 30px 10px 10px;border-radius:8px;width:100%;" />
+      <%= if @claim_number != "" do %>
+        <button type="button" onclick="document.getElementById('claim_number').value=''; document.getElementById('claim_number').focus();" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#94a3b8;cursor:pointer;font-size:20px;padding:0;width:24px;height:24px;line-height:1;">×</button>
+      <% end %>
+    </div>
+    
+    <!-- Service From -->
+    <div style="position:relative;">
+      <input id="service_from" type="date" name="service_from" value={@service_from} style="background:#020617;border:2px solid #38bdf8;color:white;padding:10px 30px 10px 10px;border-radius:8px;width:100%;cursor:pointer;" />
+      <%= if @service_from != "" do %>
+        <button type="button" onclick="document.getElementById('service_from').value=''; document.getElementById('service_from').focus();" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#94a3b8;cursor:pointer;font-size:20px;padding:0;width:24px;height:24px;line-height:1;">×</button>
+      <% end %>
+    </div>
+
+    <!-- Service To -->
+    <div style="position:relative;">
+      <input id="service_to" type="date" name="service_to" value={@service_to} style="background:#020617;border:2px solid #38bdf8;color:white;padding:10px 30px 10px 10px;border-radius:8px;width:100%;cursor:pointer;" />
+      <%= if @service_to != "" do %>
+        <button type="button" onclick="document.getElementById('service_to').value=''; document.getElementById('service_to').focus();" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#94a3b8;cursor:pointer;font-size:20px;padding:0;width:24px;height:24px;line-height:1;">×</button>
+      <% end %>
+    </div>
+  </div>
+
+  <div style="margin-top:18px; display:flex; gap:12px; align-items:center;">
+    <button type="submit" id="search-btn" style="background:#22c55e;color:#020617;padding:10px 20px;border:none;border-radius:8px;font-weight:bold;cursor:pointer;">
+      Search
+    </button>
+    <a href="/search" style="background:#334155;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;">
+      Clear All
+    </a>
+    
+    <!-- LOADING SPINNER -->
+    <div id="loading-spinner" style="display:none; margin-left:12px;">
+      <div style="border:3px solid #334155;border-top:3px solid #38bdf8;border-radius:50%;width:24px;height:24px;animation:spin 0.8s linear infinite;"></div>
+    </div>
+  </div>
+</form>
+
+<script>
+  // Show spinner on search submit
+  document.getElementById('search-form').addEventListener('submit', function() {
+    document.getElementById('search-btn').disabled = true;
+    document.getElementById('loading-spinner').style.display = 'block';
+  });
+</script>
+
+<style>
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+</style>
+
+    <!-- MESSAGES -->
+    <%= if !@show_results and @json == nil do %>
+      <p style="margin-top:20px; color:#94a3b8;">Please enter search criteria.</p>
+    <% end %>
+
+    <%= if @show_results and @claims == [] do %>
+      <p style="margin-top:20px; color:#f87171;">No results found.</p>
+    <% end %>
+
+    <!-- SEARCH RESULTS -->
+    <%= if @claims != [] do %>
+      <div class="fade-in" style="display:flex; justify-content:space-between; align-items:center; margin-top:30px;">
+        <h2 style="color:#38bdf8; margin:0;">Search Results</h2>
+        <p style="color:#94a3b8; margin:0; font-size:14px;">
+          Showing <%= (@page - 1) * 10 + 1 %> - <%= min(@page * 10, @total_count) %> of <%= @total_count %> results
+        </p>
+      </div>
+
+<table class="fade-in" style="width:100%; margin-top:10px; border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:2px solid #38bdf8;">
+            <th align="left">Patient</th>
+            <th align="left">Payer</th>
+            <th align="left">Claim #</th>
+          </tr>
+        </thead>
+        <tbody>
+          <%= for claim <- @claims do %>
+            <%
+              # Check if claim is new (< 24 hours)
+              now = NaiveDateTime.utc_now()
+              twenty_four_hours_ago = NaiveDateTime.add(now, -24 * 60 * 60, :second)
+              is_new = NaiveDateTime.compare(claim.inserted_at, twenty_four_hours_ago) == :gt
+            %>
+            <tr style="border-bottom:1px solid #1e293b;">
+              <td style="padding:8px;">
+                <a href={"/claims/#{claim.id}"} style="color:#22d3ee; text-decoration:underline;">
+                  <%= claim.patient_first_name %> <%= claim.patient_last_name %>
+                </a>
+                <%= if is_new do %>
+                  <span style="background:#22c55e; color:white; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:bold; margin-left:8px;">NEW</span>
+                <% end %>
+              </td>
+              <td><%= claim.payer_name %></td>
+              <td><%= claim.clearinghouse_claim_number %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+
+      <!-- PAGINATION -->
+      <%= if @total_pages > 1 do %>
+        <div class="fade-in" style="margin-top:20px; display:flex; gap:8px; justify-content:center; align-items:center;">
+          <!-- Previous Button -->
+          <%= if @page > 1 do %>
+            <a href={"/search?patient_first=#{@patient_first}&patient_last=#{@patient_last}&payer=#{@payer}&billing_provider=#{@billing_provider}&rendering_provider=#{@rendering_provider}&claim_number=#{@claim_number}&service_from=#{@service_from}&service_to=#{@service_to}&page=#{@page - 1}"} 
+               style="background:#334155; color:white; padding:8px 12px; border-radius:6px; text-decoration:none; font-size:14px;">
+              ← Previous
+            </a>
+          <% else %>
+            <span style="background:#1e293b; color:#64748b; padding:8px 12px; border-radius:6px; font-size:14px;">
+              ← Previous
+            </span>
+          <% end %>
+
+          <!-- Page Numbers -->
+          <%= for p <- max(1, @page - 2)..min(@total_pages, @page + 2) do %>
+            <%= if p == @page do %>
+              <span style="background:#38bdf8; color:#020617; padding:8px 12px; border-radius:6px; font-weight:bold; font-size:14px;">
+                <%= p %>
+              </span>
+            <% else %>
+              <a href={"/search?patient_first=#{@patient_first}&patient_last=#{@patient_last}&payer=#{@payer}&billing_provider=#{@billing_provider}&rendering_provider=#{@rendering_provider}&claim_number=#{@claim_number}&service_from=#{@service_from}&service_to=#{@service_to}&page=#{p}"} 
+                 style="background:#334155; color:white; padding:8px 12px; border-radius:6px; text-decoration:none; font-size:14px;">
+                <%= p %>
+              </a>
+            <% end %>
+          <% end %>
+
+          <!-- Next Button -->
+          <%= if @page < @total_pages do %>
+            <a href={"/search?patient_first=#{@patient_first}&patient_last=#{@patient_last}&payer=#{@payer}&billing_provider=#{@billing_provider}&rendering_provider=#{@rendering_provider}&claim_number=#{@claim_number}&service_from=#{@service_from}&service_to=#{@service_to}&page=#{@page + 1}"} 
+               style="background:#334155; color:white; padding:8px 12px; border-radius:6px; text-decoration:none; font-size:14px;">
+              Next →
+            </a>
+          <% else %>
+            <span style="background:#1e293b; color:#64748b; padding:8px 12px; border-radius:6px; font-size:14px;">
+              Next →
+            </span>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+
+<!-- FULL CLAIM VIEW -->
+    <%= if @json do %>
+    <!-- BACK TO SEARCH BUTTON -->
+      <div class="fade-in" style="margin-top:30px; margin-bottom:12px;">
+        <a href="/search" style="background:#334155; color:white; padding:10px 20px; border-radius:8px; text-decoration:none; display:inline-block;">
+          ← Back to Search
+        </a>
+      </div>
+      
+      <%
+        # Detect claim type from version
+        transaction = Enum.find(@json, fn s -> s["section"] == "transaction" end) || %{}
+        version = get_in(transaction, ["data", "version"]) || ""
+        
+        {claim_type, claim_label, badge_color} = cond do
+          String.contains?(version, "X222") -> {"837P", "PROFESSIONAL", "#3b82f6"}
+          String.contains?(version, "X223") -> {"837I", "INSTITUTIONAL", "#10b981"}
+          String.contains?(version, "X224") -> {"837D", "DENTAL", "#f59e0b"}
+          true -> {"837", "UNKNOWN", "#6b7280"}
+        end
+      %>
+      
+      <!-- CLAIM TYPE BADGE -->
+      <div class="fade-in" style="margin-bottom:12px;">
+        <span style={"background:#{badge_color}; color:white; padding:8px 20px; border-radius:8px; font-weight:bold; font-size:15px; box-shadow:0 3px 10px rgba(0,0,0,0.4); display:inline-block;"}>
+          <%= claim_type %> - <%= claim_label %>
+        </span>
+      </div>
+      
+      <!-- ===== CLAIM SUMMARY HEADER ===== -->
+      <% 
+        # Extract summary data from sections
+        subscriber = Enum.find(@json, fn s -> s["section"] == "subscriber" end) || %{}
+        subscriber_data = subscriber["data"] || %{}
+        
+        payer = Enum.find(@json, fn s -> s["section"] == "payer" end) || %{}
+        payer_data = payer["data"] || %{}
+        
+        claim = Enum.find(@json, fn s -> s["section"] == "claim" end) || %{}
+        claim_data = claim["data"] || %{}
+        
+        service_lines = Enum.find(@json, fn s -> String.contains?(s["section"] || "", "service") end) || %{}
+        service_data = service_lines["data"] || []
+        
+        # Get rendering provider NPI
+        rendering_provider = Enum.find(@json, fn s -> s["section"] == "renderingProvider" end) || %{}
+        rendering_provider_data = rendering_provider["data"] || %{}
+        rendering_npi = rendering_provider_data["npi"] || ""
+        
+        # Get date range from service lines
+        service_dates = if is_list(service_data) do
+          service_data
+          |> Enum.map(fn line -> line["serviceDate"] end)
+          |> Enum.reject(&is_nil/1)
+        else
+          []
+        end
+        
+        first_date = if service_dates != [], do: Enum.min(service_dates), else: nil
+        last_date = if service_dates != [], do: Enum.max(service_dates), else: nil
+        
+        # Determine status based on indicators
+        indicators = claim_data["indicators"] || %{}
+        all_approved = Enum.all?(Map.values(indicators), fn v -> v in ["Y", "A", "I"] end)
+        status = if all_approved and indicators != %{}, do: "Approved", else: "Pending Review"
+        status_color = if all_approved and indicators != %{}, do: "#22c55e", else: "#fbbf24"
+      %>
+      
+      <div class="fade-in" style="
+        margin-bottom:30px;
+        background:#1e293b;
+        border:2px solid #38bdf8;
+        border-radius:12px;
+        padding:20px 24px;
+        box-shadow:0 4px 20px rgba(56,189,248,0.2);
+      ">
+        <h2 style="
+          font-size:18px;
+          font-weight:bold;
+          color:#38bdf8;
+          margin:0 0 16px 0;
+          border-bottom:1px solid #334155;
+          padding-bottom:8px;
+        ">
+          CLAIM SUMMARY
+        </h2>
+        
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px 24px;">
+          <div>
+            <span style="color:#94a3b8; font-size:13px;">Patient:</span>
+            <span style="color:white; font-weight:600; margin-left:8px;">
+              <%= subscriber_data["firstName"] %> <%= subscriber_data["lastName"] %>
+              <%= if subscriber_data["dob"] do %>
+                <span style="color:#94a3b8; font-weight:400;">(DOB: <%= format_date(subscriber_data["dob"]) %>)</span>
+              <% end %>
+            </span>
+          </div>
+          
+          <div>
+            <span style="color:#94a3b8; font-size:13px;">Payer:</span>
+            <span style="color:white; font-weight:600; margin-left:8px;"><%= payer_data["name"] %></span>
+          </div>
+          
+          <div>
+            <span style="color:#94a3b8; font-size:13px;">Claim #:</span>
+            <span style="color:white; font-weight:600; margin-left:8px;"><%= claim_data["clearinghouseClaimNumber"] || claim_data["id"] %></span>
+          </div>
+          
+          <div>
+            <span style="color:#94a3b8; font-size:13px;">Service Dates:</span>
+            <span style="color:white; font-weight:600; margin-left:8px;">
+              <%= if first_date && last_date do %>
+                <%= if first_date == last_date do %>
+                  <%= format_date(first_date) %>
+                <% else %>
+                  <%= format_date(first_date) %> – <%= format_date(last_date) %>
+                <% end %>
+              <% end %>
+            </span>
+          </div>
+          
+          <div>
+            <span style="color:#94a3b8; font-size:13px;">Total Charge:</span>
+            <span style="color:#22c55e; font-weight:700; font-size:16px; margin-left:8px;">
+              $<%= if claim_data["totalCharge"], do: :erlang.float_to_binary(claim_data["totalCharge"] * 1.0, decimals: 2), else: "0.00" %>
+            </span>
+          </div>
+          
+          <div>
+            <span style="color:#94a3b8; font-size:13px;">Status:</span>
+            <span style={"color:#{status_color}; font-weight:700; margin-left:8px;"}><%= status %></span>
+          </div>
+          
+          <%= if rendering_npi != "" do %>
+            <div>
+              <span style="color:#94a3b8; font-size:13px;">Rendering Provider NPI:</span>
+              <span style="color:white; font-weight:600; margin-left:8px;"><%= rendering_npi %></span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <%= for section <- @json do %>
+
+        <div class="fade-in" style="margin-top:40px;">
+
+          <h2 style="
+            font-size:14px;
+            font-weight:bold;
+            color:#38bdf8;
+            border-bottom:1px solid #38bdf8;
+            padding-bottom:4px;
+          ">
+            <%= section["section"]
+                |> String.replace("_", " ")
+                |> String.upcase() %>
+          </h2>
+
+          <% data = section["data"] || %{} %>
+          <% section_name =
+            (section["section"] || "")
+            |> to_string()
+            |> String.downcase()
+          %>
+
+          <!-- ===== MAP SECTIONS ===== -->
+          <%= if is_map(data) and data != %{} do %>
+
+            <!-- ===== SUBSCRIBER: firstName, lastName, ADDRESS ΠΡΩΤΑ ===== -->         
+            <%= if String.contains?(section_name, "subscriber") do %>            
+              <!-- FIRST NAME -->           
+              <%= if data["firstName"] do %>             
+                <p>               
+                  <b>First Name:</b> <%= data["firstName"] %>             
+                </p>           
+              <% end %>
+              
+              <!-- LAST NAME -->           
+              <%= if data["lastName"] do %>             
+                <p>               
+                  <b>Last Name:</b> <%= data["lastName"] %>             
+                </p>           
+              <% end %>
+                        
+              <!-- ADDRESS -->           
+              <%= if is_map(data["address"]) do %>             
+                <p>               
+                  <b>Address:</b><br>               
+                  <%= data["address"]["street"] %><br>               
+                  <%= data["address"]["city"] %>,               
+                  <%= data["address"]["state"] %>               
+                  <%= data["address"]["zip"] %>             
+                </p>           
+              <% end %>          
+            <% else %>           
+              <!-- ΓΙΑ ΟΛΑ ΤΑ ΑΛΛΑ SECTIONS -->
+              
+              <!-- ΑΝ ΕΧΕΙ firstName/lastName (όπως rendering provider) -->
+              <%= if data["firstName"] || data["lastName"] do %>
+                <%= if data["firstName"] do %>
+                  <p><b>First Name:</b> <%= data["firstName"] %></p>
+                <% end %>
+                <%= if data["lastName"] do %>
+                  <p><b>Last Name:</b> <%= data["lastName"] %></p>
+                <% end %>
+              <% else %>
+                <!-- ΑΛΛΙΩΣ ΑΝ ΕΧΕΙ name (όπως billing provider) -->
+                <%= if data["name"] do %>             
+                  <p><b>Name:</b> <%= data["name"] %></p>           
+                <% end %>
+              <% end %>
+              
+              <%= if is_map(data["address"]) do %>             
+                <p>               
+                  <b>Address:</b><br>               
+                  <%= data["address"]["street"] %><br>               
+                  <%= data["address"]["city"] %>,               
+                  <%= data["address"]["state"] %>               
+                  <%= data["address"]["zip"] %>             
+                </p>           
+              <% end %>            
+              <!-- EXTENSION (ΓΙΑ ΤΑ ΑΛΛΑ) -->           
+              <%= if data["extension"] do %>             
+                <p><b>Extension:</b> <%= data["extension"] %></p>           
+              <% end %>          
+            <% end %>
+
+            <!-- ===== ΥΠΟΛΟΙΠΑ ΠΕΔΙΑ ===== -->
+            <%= for {k, v} <- data do %>
+
+              <%= if k not in ["name","firstName","lastName","address","extension"] do %>
+
+                <%= if is_map(v) do %>
+
+                  <!-- ΑΝ ΕΙΝΑΙ INDICATORS (BADGES) -->
+                  <%= if k == "indicators" do %>
+                    <p style="margin-top:12px;"><b><%= human_label(k) %>:</b></p>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
+                      <%= for {kk, vv} <- v do %>
+                        <% is_yes = vv in ["Y", "A", "I", "y", "a", "i"] %>
+                        <% badge_bg = if is_yes, do: "#059669", else: "#6b7280" %>
+                        <% badge_title = if is_yes, do: "Approved / Consent Given", else: "Not Applicable / No Consent" %>
+                        <span style={"background:#{badge_bg}; color:white; padding:6px 14px; border-radius:6px; font-size:13px; font-weight:500;"} title={badge_title}>
+                          <%= human_label(kk) %>
+                        </span>
+                      <% end %>
+                    </div>
+                  <% else %>
+                    <!-- ΑΛΛΑ MAP FIELDS -->
+                    <p><b><%= human_label(k) %>:</b></p>
+                    <%= for {kk, vv} <- v do %>
+                      <p style="margin-left:16px;">
+                        <% formatted =
+  cond do
+    kk == "phone" and is_binary(vv) and String.length(vv) == 10 ->
+      "(" <> String.slice(vv,0,3) <> ") " <>
+      String.slice(vv,3,3) <> "-" <>
+      String.slice(vv,6,4)
+
+    true ->
+      vv
+  end
+%>
+
+<%= human_label(kk) %>: <%= formatted %>
+
+                      </p>
+                    <% end %>
+                  <% end %>
+
+                <% else %>
+
+                  <!-- FORMAT DATES -->
+                  <% is_date_field = k in ["dob", "onsetDate", "date"] %>
+                  <% display_value = if is_date_field, do: format_date(v), else: v %>
+                  
+                  <p>
+                    <b><%= human_label(k) %>:</b> <%= display_value %>
+                  </p>
+
+                <% end %>
+
+              <% end %>
+
+            <% end %>
+
+          <% end %>
+
+          <!-- ===== LIST SECTIONS ===== -->
+          <%= if is_list(data) and data != [] do %>
+            <% 
+              # Ταξινόμηση των keys ώστε το lineNumber να είναι πρώτο
+              first_row = List.first(data)
+              all_keys = Map.keys(first_row)
+              sorted_keys = if "lineNumber" in all_keys do
+                ["lineNumber" | Enum.reject(all_keys, &(&1 == "lineNumber"))]
+              else
+                all_keys
+              end
+            %>
+            <table style="width:100%; border-collapse:collapse; margin-top:8px;">
+              <thead>
+                <tr>
+                  <%= for key <- sorted_keys do %>
+                    <th style="border:1px solid #334155; padding:4px;">
+                      <%= human_label(key) %>
+                    </th>
+                  <% end %>
+                </tr>
+              </thead>
+              <tbody>
+                <%= for row <- data do %>
+                  <tr>
+                    <%= for key <- sorted_keys do %>
+                      <% is_date_field = key == "serviceDate" %>
+                      <% cell_value = if is_date_field, do: format_date(row[key]), else: row[key] %>
+                      <td style="border:1px solid #334155; padding:4px;">
+                        <%= cell_value %>
+                      </td>
+                    <% end %>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+            
+            <!-- TOTAL (ΓΙΑ SERVICE LINES ΜΟΝΟ) -->
+            <%= if String.contains?(section_name, "service") do %>
+              <% total = Enum.reduce(data, 0, fn row, acc -> 
+                charge = row["charge"] || 0
+                acc + (if is_number(charge), do: charge, else: 0)
+              end) %>
+              <p style="margin-top:12px; font-size:18px; font-weight:bold; color:#22c55e;">
+                TOTAL: <%= :erlang.float_to_binary(total * 1.0, decimals: 2) %>
+              </p>
+            <% end %>
+          <% end %>
+
+        </div>
+
+      <% end %>
+      
+<!-- EXPORT DROPDOWN BUTTON -->
+<div class="fade-in" style="margin-top:40px; text-align:center;">
+  <div style="display:inline-block; position:relative;">
+    <button 
+      onclick="document.getElementById('export-menu').style.display = document.getElementById('export-menu').style.display === 'block' ? 'none' : 'block'"
+      style="background:#22c55e; color:#020617; padding:14px 32px; border-radius:8px; font-weight:bold; font-size:16px; border:none; cursor:pointer; box-shadow: 0 4px 10px rgba(34,197,94,0.3);">
+      📥 Export ▼
+    </button>
+    
+    <!-- DROPDOWN MENU -->
+    <div id="export-menu" style="display:none; position:absolute; top:60px; left:50%; transform:translateX(-50%); background:#1e293b; border:2px solid #38bdf8; border-radius:8px; box-shadow:0 8px 20px rgba(0,0,0,0.5); min-width:200px; z-index:10;">
+      <a href={"/claims/#{@claim_id}/export"} 
+         style="display:block; padding:12px 20px; color:white; text-decoration:none; border-bottom:1px solid #334155; font-size:15px;">
+        📄 Export as PDF
+      </a>
+      <a href={"/claims/#{@claim_id}/export/csv"} 
+         style="display:block; padding:12px 20px; color:white; text-decoration:none; font-size:15px;">
+        📊 Export as CSV
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Close dropdown when clicking outside
+  document.addEventListener('click', function(e) {
+    const menu = document.getElementById('export-menu');
+    const button = e.target.closest('button');
+    if (menu && !button && !menu.contains(e.target)) {
+      menu.style.display = 'none';
+    }
+  });
+</script>
+    <% end %>
+  </div>
+</div>
+
+<!-- FADE-IN ANIMATION CSS -->
+<style>
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+</style>

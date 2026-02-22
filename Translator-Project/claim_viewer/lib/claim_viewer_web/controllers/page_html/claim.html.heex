@@ -1,0 +1,46 @@
+<!-- Main container for the page -->
+<!-- Adds padding, dark background, full viewport height, and white text -->
+<div style="padding: 30px; background: #0f172a; min-height: 100vh; color: white;">
+
+  <!-- Loop through each section of the JSON claim -->
+  <%= for item <- @json do %>
+
+    <!-- ===================== -->
+    <!-- SECTION TITLE -->
+    <!-- ===================== -->
+
+    <!-- Displays the section name -->
+    <!-- Styled as a highlighted heading -->
+    <h2 style="
+      margin-top: 40px;                 <!-- Space above each section -->
+      font-size: 22px;                  <!-- Section title size -->
+      font-weight: bold;                <!-- Bold text -->
+      color: #38bdf8;                   <!-- Light blue text color -->
+      border-bottom: 2px solid #38bdf8; <!-- Underline separator -->
+      padding-bottom: 6px;              <!-- Space between text and border -->
+    ">
+      <!-- Converts section name to uppercase -->
+      <%= String.upcase(item["section"]) %>
+    </h2>
+
+    <!-- ===================== -->
+    <!-- SECTION DATA -->
+    <!-- ===================== -->
+
+    <!-- Displays the section data as formatted JSON -->
+    <pre style="
+      background: #020617;              <!-- Dark background for contrast -->
+      color: #22c55e;                   <!-- Green text for JSON data -->
+      padding: 16px;                    <!-- Inner spacing -->
+      border-radius: 10px;              <!-- Rounded corners -->
+      margin-top: 10px;                 <!-- Space above JSON block -->
+      overflow-x: auto;                 <!-- Horizontal scrolling if needed -->
+      font-size: 14px;                  <!-- Smaller font for data -->
+    ">
+<%= Jason.encode!(item["data"], pretty: true) %>
+    </pre>
+
+  <!-- End of loop -->
+  <% end %>
+
+</div>

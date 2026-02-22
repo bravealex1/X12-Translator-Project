@@ -1,0 +1,311 @@
+{
+  "Transaction": [
+    "Transaction Level (ST, BHT, REF)",
+    "ST*837*0021~BHT*0019*00*0123*19981015*1023*RP~REF*87*004010X098",
+    "ST*837*0021~ = ST marks the beginning of the transaction. 837 indicates a Professional Health Care Claim. 0021 is the control number.",
+    "837 = Type of transaction (Health Care Claim – Professional).",
+    "0021 = Transaction Set Control Number (must match SE).",
+    "BHT*0019*00*0123*19981015*1023*RP~ = BHT provides purpose and timestamp information.",
+    "0019 = Original claim submission.",
+    "00 = Original transaction.",
+    "0123 = Submitter's reference ID.",
+    "19981015 = Transaction creation date.",
+    "1023 = Transaction creation time.",
+    "RP = Reporting structure.",
+    "REF*87*004010X098~ = Implementation guide reference.",
+    "87 = Reference qualifier indicating implementation version.",
+    "004010X098 = 837P Implementation Guide version."
+  ],
+  "transaction": {
+    "type": "837",
+    "controlNumber": "0021",
+    "purpose": "0019",
+    "referenceId": "0123",
+    "date": "1998-10-15",
+    "time": "10:23",
+    "version": "004010X098"
+  },
+
+  "Submitter": [
+    "Submitter Loop",
+    "NM1*41*2*PREMIER BILLING SERVICE*****46*TGJ23~ = Submitter identification.",
+    "41 = Submitter entity type.",
+    "2 = Organization.",
+    "PREMIER BILLING SERVICE = Submitter name.",
+    "46 = EDI ID qualifier.",
+    "TGJ23 = Submitter EDI ID.",
+    "PER*IC*JERRY*TE*3055552222*EX*231~ = Submitter contact info.",
+    "IC = Information contact.",
+    "JERRY = Contact name.",
+    "TE = Telephone.",
+    "3055552222 = Phone number.",
+    "EX = Extension qualifier.",
+    "231 = Phone extension."
+  ],
+  "submitter": {
+    "name": "PREMIER BILLING SERVICE",
+    "id": "TGJ23",
+    "contact": {
+      "name": "JERRY",
+      "phone": "3055552222",
+      "extension": "231"
+    }
+  },
+
+  "Receiver": [
+    " Receiver",
+    "NM1*40*2*REPRICER XYZ*****46*66783JJT~ = Receiver identification.",
+    "40 = Receiver.",
+    "2 = Organization.",
+    "REPRICER XYZ = Receiver name.",
+    "46 = Qualifier for receiver ID.",
+    "66783JJT = Receiver EDI ID."
+  ],
+  "receiver": {
+    "name": "REPRICER XYZ",
+    "id": "66783JJT"
+  },
+
+  "Billing_Provider": [
+    "Billing Provider",
+    "NM1*85*2*PREMIER BILLING SERVICE*****24*587654321~ = Billing provider info.",
+    "85 = Billing provider.",
+    "2 = Organization.",
+    "PREMIER BILLING SERVICE = Provider name.",
+    "24 = EIN qualifier.",
+    "587654321 = Tax ID.",
+    "N3*234 Seaway St~N4*Miami*FL*33111",
+    "N3, N4 = Address."
+  ],
+  "billing_Provider": {
+    "name": "PREMIER BILLING SERVICE",
+    "taxId": "587654321",
+    "address": {
+      "street": "234 Seaway St",
+      "city": "Miami",
+      "state": "FL",
+      "zip": "33111"
+    }
+  },
+
+  "Pay_To_Provider": [
+    "Pay-To Provider",
+    "NM1*87*2*KILDARE ASSOC*****24*581234567~ = Pay-to provider information.",
+    "87 = Pay-to provider.",
+    "KILDARE ASSOC = Provider name.",
+    "24 = EIN qualifier.",
+    "581234567 = Tax ID.",
+    "N3*2345 OCEAN BLVD~N4*MIAMI*FL*33111",
+    "Address provided via N3/N4."
+  ],
+  "Pay_To_provider": {
+    "name": "KILDARE ASSOC",
+    "taxId": "581234567",
+    "address": {
+      "street": "2345 OCEAN BLVD",
+      "city": "MIAMI",
+      "state": "FL",
+      "zip": "33111"
+    }
+  },
+
+  "Subscriber": [
+    "Subscriber",
+    "SBR*P*18*12312-A******HM~ = Insurance information.",
+    "P = Primary insurance.",
+    "18 = Self relationship.",
+    "12312-A = Group number.",
+    "HM = HMO plan.",
+    "NM1*IL*1*SMITH*TED****MI*000221111~ = Subscriber identity.",
+    "IL = Insured.",
+    "1 = Person.",
+    "SMITH = Last name.",
+    "TED = First name.",
+    "MI = Member ID qualifier.",
+    "000221111 = Member ID.",
+    "DMG = Demographics: DOB, Sex.",
+    "N3*236 N MAIN ST~N4*MIAMI*FL*33413",
+    "N3, N4 = Address."
+  ],
+  "subscriber": {
+    "relationship": "self",
+    "groupNumber": "12312-A",
+    "planType": "HM",
+    "id": "000221111",
+    "firstName": "TED",
+    "lastName": "SMITH",
+    "dob": "1943-05-01",
+    "sex": "M",
+    "address": {
+      "street": "236 N MAIN ST",
+      "city": "MIAMI",
+      "state": "FL",
+      "zip": "33413"
+    }
+  },
+
+  "Payer": [
+    "Payer",
+    "NM1*PR*2*ALLIANCE HEALTH AND LIFE INSURANCE*****PI*741234~",
+    "PR = Payer.",
+    "2 = Organization.",
+    "ALLIANCE HEALTH AND LIFE INSURANCE = Payer name.",
+    "PI = Payer ID qualifier.",
+    "741234 = Payer ID."
+  ],
+  "payer": {
+    "name": "ALLIANCE HEALTH AND LIFE INSURANCE",
+    "payerId": "741234"
+  },
+
+  "Claim": [
+    "Claim",
+    "CLM*26462967*100***11::1*Y*A*Y*Y*C~ = Claim information.",
+    "26462967 = Patient account / claim number.",
+    "100 = Total charge amount.",
+    "11::1 = Place of Service composite (11=Office, 1=Facility Code Qualifier)",
+    "Y = Assigned benefits.",
+    "A = Provider signature on file.",
+    "Y = Release of information.",
+    "Y = Patient signature on file.",
+    "C = Related cause code.",
+    "DTP*431*D8*19981003~ = Onset date.",
+    "REF*D9*17312345600006351~ = Clearinghouse claim number."
+  ],
+  "claim": {
+    "id": "26462967",
+    "totalCharge": 100,
+    "placeOfService": "11",
+    "serviceType": "1",
+    "indicators": {
+      "assigned": "Y",
+      "providerSignature": "A",
+      "releaseInfo": "Y",
+      "patientSignature": "Y",
+      "relatedCause": "C"
+    },
+    "onsetDate": "1998-10-03",
+    "clearinghouseClaimNumber": "17312345600006351"
+  },
+
+  "Diagnosis": [
+    "HI Segment contains diagnosis codes.",
+    "HI*BK:0340*BF:V7389~",
+    "BK = Primary diagnosis.",
+    "BF = Secondary diagnosis."
+  ],
+  "diagnosis": {
+    "primary": "0340",
+    "secondary": ["V7389"]
+  },
+
+  "Rendering Provider": [
+    "Rendering Provider ",
+    "NM1*82*1*KILDARE*BEN****34*112233334~",
+    "82 = Rendering provider.",
+    "1 = Person.",
+    "KILDARE = Last name.",
+    "BEN = First name.",
+    "34 = ID qualifier.",
+    "112233334 = NPI."
+  ],
+  "renderingProvider": {
+    "firstName": "BEN",
+    "lastName": "KILDARE",
+    "npi": "112233334"
+  },
+
+  "Service Facility": [
+    "Service Facility",
+    "NM1*77*2*KILDARE ASSOCIATES*****24*581234567~",
+    "77 = Service facility.",
+    "2 = Organization.",
+    "KILDARE ASSOCIATES = Facility name.",
+    "24 = EIN qualifier.",
+    "581234567 = Facility tax ID."
+  ],
+  "serviceFacility": {
+    "name": "KILDARE ASSOCIATES",
+    "taxId": "581234567",
+    "address": {
+      "street": "2345 OCEAN BLVD",
+      "city": "MIAMI",
+      "state": "FL",
+      "zip": "33111"
+    }
+  },
+"Service_Lines": [
+  "ServiceLines",
+  "Each service line describes one billed medical service.",
+  
+  "LX*1~ = Service line counter.",
+  "1 = First billed service.",
+
+  "SV1*HC:99213*40*UN*1***1**N~ = Service line details.",
+  "HC = Healthcare Common Procedure Coding System (HCPCS) code qualifier.",
+  "99213 = Procedure code (Office Visit, Established Patient).",
+  "40 = Charge amount.",
+  "UN = Unit qualifier.",
+  "1 = Number of units.",
+  "1 (in position 7) = Diagnosis pointer (link to primary diagnosis).",
+  "N = Not emergency service.",
+
+  "DTP*472*D8*19981003~ = Date of service.",
+  "472 = Service date qualifier.",
+  "D8 = Single date format.",
+  "19981003 = Date of visit.",
+
+  "LX*2~ / SV1*87072 / 15 / UN / 1 ... = Second service line (lab test).",
+
+  "LX*3~ / SV1*99214*35*UN*1 ... = Third service line (Follow-up visit).",
+
+  "LX*4~ / SV1*86663*10*UN*1 ... = Fourth service line (Mono test)."
+],
+"service_Lines": [
+  {
+    "lineNumber": 1,
+    "codeQualifier": "HC",
+    "procedureCode": "99213",
+    "charge": 40,
+    "unitQualifier": "UN",
+    "units": 1,
+    "diagnosisPointer": 1,
+    "emergencyIndicator": "N",
+    "serviceDate": "1998-10-03"
+  },
+  {
+    "lineNumber": 2,
+    "codeQualifier": "HC",
+    "procedureCode": "87072",
+    "charge": 15,
+    "unitQualifier": "UN",
+    "units": 1,
+    "diagnosisPointer": 1,
+    "emergencyIndicator": "N",
+    "serviceDate": "1998-10-03"
+  },
+  {
+    "lineNumber": 3,
+    "codeQualifier": "HC",
+    "procedureCode": "99214",
+    "charge": 35,
+    "unitQualifier": "UN",
+    "units": 1,
+    "diagnosisPointer": 2,
+    "emergencyIndicator": "N",
+    "serviceDate": "1998-10-10"
+  },
+  {
+    "lineNumber": 4,
+    "codeQualifier": "HC",
+    "procedureCode": "86663",
+    "charge": 10,
+    "unitQualifier": "UN",
+    "units": 1,
+    "diagnosisPointer": 2,
+    "emergencyIndicator": "N",
+    "serviceDate": "1998-10-10"
+  }
+]
+
+}

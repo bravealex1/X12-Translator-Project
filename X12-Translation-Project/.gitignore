@@ -1,0 +1,24 @@
+# Output files (generated, not source code)
+output_files/*.json
+output_files_viewer/*.json
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+env/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+
+# Allow sample files
+!samples/
+!samples/**
