@@ -158,17 +158,3 @@ Unknown extensions are inspected by content:
 - `Example.json`: sample claim-like JSON content for reference
 
 For upload testing with the Viewer, the section-array format (like `claim_viewer/priv/static/claim.json`) is the most reliable test input.
-
-## Quick Verification Checklist ("Triple-Check" Style)
-
-If I need to verify the whole combined system is working end-to-end:
-
-1. Start Viewer (`mix phx.server`)
-2. Upload raw `.edi`/`.837` file
-3. Confirm successful redirect/message
-4. Search by patient or claim number
-5. Open claim detail page
-6. Confirm data rendered by sections
-7. Export CSV/PDF (PDF requires `wkhtmltopdf`)
-
-If all 7 pass, the combined X12 Claim Engine + Viewer flow is working as intended.
